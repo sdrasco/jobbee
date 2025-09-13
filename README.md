@@ -1,10 +1,12 @@
 # Jobbee
 
-A tiny organization tool for job hunting.  Should look like this. 
+A tiny organization tool for job hunting, [live online](jobbee.uk).  Should look like this. 
 
-![Screenshot of Jobbee](screenshot.png)
+![Screenshot 1 of Jobbee](screenshot.png)
 
-Move the cards around as you like. Hopefully self explanatory.
+![Screenshot 2 of Jobbee](screenshot2.png)
+
+Create, edit, and drag the cards around as you like. Hopefully self explanatory.
 
 ## License
 
