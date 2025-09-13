@@ -89,7 +89,7 @@
       box-shadow:var(--shadow);
     }
     .toolbar-main{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
-    .title{ display:flex; align-items:center; gap:10px; }
+    .title{ display:flex; flex-direction:column; align-items:flex-start; gap:10px; }
 
     .toolbar-actions{ display:flex; flex-direction:column; align-items:flex-start; gap:10px; }
     .filters{ display:flex; flex-direction:column; width:100%; max-width:100%; gap:8px; }
@@ -268,6 +268,7 @@
       <div class="toolbar-main">
         <div class="title">
           <img src="jobbee_small.png" alt="Jobbee logo" width="120" height="120">
+          <p class="footnote">Free to use. If this helps you land a job, maybe <a href="https://buymeacoffee.com/stevedrasco" class="link" target="_blank">throw its creator a bone</a>.</p>
         </div>
         <div class="toolbar-actions">
           <div class="filters">
@@ -308,7 +309,6 @@
           </div>
         </div>
       </div>
-      <p class="footnote">Free to use. If this helps you land a job, maybe <a href="https://buymeacoffee.com/stevedrasco" class="link" target="_blank">throw its creator a bone</a>.</p>
     </div>
 
     <div id="board" class="board" aria-live="polite"></div>
