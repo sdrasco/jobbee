@@ -467,7 +467,7 @@
     function saveColState(){ localStorage.setItem(COL_STATE_KEY, JSON.stringify(collapsed)); }
 
     function clearData(){
-      const ok = confirm("Clear all locally stored data?");
+      const ok = confirm("Are you sure you want to clear your local data? This will permanently delete your saved applications and the default sample data will be shown again.");
       if(!ok) return;
       localStorage.removeItem(LS_KEY);
       localStorage.removeItem(COL_STATE_KEY);
