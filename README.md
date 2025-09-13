@@ -1,6 +1,6 @@
 # Jobbee
 
-A tiny organization tool for job hunting, [live online](jobbee.uk).  Should look like this. 
+A tiny organization tool for job hunting, [live at jobbee.uk](https://jobbee.uk/).  Should look like this. 
 
 ![Screenshot 1 of Jobbee](screenshot.png)
 
