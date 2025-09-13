@@ -2,7 +2,7 @@
 
 ![Jobbee logo](jobbee_small.png)
 
-A tiny self-contained job board demo.
+A tiny organization tool for job hunting.
 
 ## License
 
