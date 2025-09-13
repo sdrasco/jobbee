@@ -302,7 +302,7 @@
     </div>
 
     <div id="board" class="board" aria-live="polite"></div>
-    <p id="emptyState" class="empty">No applications yet. Click <b>Add</b> to create your first entry.</p>
+    <p id="emptyState" class="empty">No applications yet. Click <b>Add</b> to create your first entry. Or <a href="job-applications.json" download>download our silly example file</a> and import it to see how things look.</p>
     <p class="footnote">Your data is saved privately in this browser (localStorage). Use Export to back up and Import to restore.</p>
   </div>
 
@@ -535,7 +535,11 @@
       // Empty state — if nothing to render, show message.
       const total = Object.values(groups).reduce((acc,arr)=>acc+arr.length,0);
       if(total === 0){
-        els.empty.textContent = items.length && q ? "No applications match your search." : "No applications yet. Click Add to create your first entry.";
+        if(items.length && q){
+          els.empty.textContent = "No applications match your search.";
+        }else{
+          els.empty.innerHTML = 'No applications yet. Click <b>Add</b> to create your first entry. Or <a href="job-applications.json" download>download our silly example file</a> and import it to see how things look.';
+        }
         els.empty.style.display = "block";
       }else{
         els.empty.style.display = "none";
