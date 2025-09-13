@@ -419,6 +419,20 @@
         items = raw ? JSON.parse(raw) : [];
         if(!Array.isArray(items)) items = [];
       }catch(e){ items = []; }
+      if(items.length === 0){
+        (async () => {
+          try{
+            const res = await fetch('job-applications.json');
+            const obj = await res.json();
+            const arr = Array.isArray(obj) ? obj : (Array.isArray(obj.data) ? obj.data : []);
+            if(Array.isArray(arr)){
+              items = arr;
+              save();
+              render();
+            }
+          }catch(err){ /* ignore if file missing or invalid */ }
+        })();
+      }
       try{
         const cs = localStorage.getItem(COL_STATE_KEY);
         collapsed = cs ? JSON.parse(cs) : {};
