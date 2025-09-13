@@ -91,7 +91,7 @@
     .title{ display:flex; align-items:center; gap:10px; }
 
     .toolbar-actions{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
-    .search{ position:relative; min-width:220px; }
+    .search{ position:relative; width: calc(var(--btn-w) * 3 + 20px); max-width:100%; }
     .search input[type="search"]{
       width:100%; padding:10px 12px 10px 34px; border:1px solid var(--border);
       background:#fff; color:var(--text); border-radius:var(--radius-sm); outline:none;
@@ -106,6 +106,11 @@
     select{ height: var(--btn-h); }
     select:focus, input:focus, textarea:focus{ box-shadow: var(--shadow-focus) }
     textarea{ resize:vertical }
+
+    #sort{
+      width: calc(var(--btn-w) * 3 + 20px);
+      max-width:100%;
+    }
 
     /* Buttons */
     .btn{
