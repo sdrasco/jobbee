@@ -91,8 +91,9 @@
     .toolbar-main{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
     .title{ display:flex; align-items:center; gap:10px; }
 
-    .toolbar-actions{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
-    .filters{ display:flex; flex-direction:column; width: calc(var(--btn-w) * 3 + 20px); max-width:100%; gap:8px; }
+    .toolbar-actions{ display:flex; flex-direction:column; align-items:flex-start; gap:10px; }
+    .filters{ display:flex; flex-direction:column; width:100%; max-width:100%; gap:8px; }
+    .action-buttons{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
     .search{ position:relative; width:100%; }
     .search input[type="search"]{
       width:100%; padding:10px 12px 10px 34px; border:1px solid var(--border);
@@ -141,7 +142,7 @@
     /* On very small screens, let CTAs flex and share space */
     @media (max-width: 520px){
       .btn-cta{ width: auto; flex: 1 1 auto; }
-      .toolbar-actions{ gap:8px; }
+      .action-buttons{ gap:8px; }
     }
 
     .btn-danger{ border-color:#fecaca; background:#fff5f5; color:#991b1b; }
@@ -256,7 +257,7 @@
     /* Small screens */
     @media (max-width: 760px){
       .toolbar-main{ flex-direction:column; align-items:stretch }
-      .toolbar-actions{ justify-content:space-between }
+      .toolbar-actions{ width:100%; }
       .grid{ grid-template-columns: 1fr }
     }
   </style>
@@ -283,26 +284,28 @@
               <option value="company_asc">Company A–Z</option>
               <option value="company_desc">Company Z–A</option>
             </select>
+            <div class="action-buttons">
+              <button id="addBtn" class="btn btn-cta btn-add" title="Add a new application" aria-label="Add a new application">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                </svg>
+                Add
+              </button>
+              <button id="exportJsonBtn" class="btn btn-cta btn-export" title="Download a backup" aria-label="Export applications">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Export
+              </button>
+              <label for="importJsonInput" class="btn btn-cta btn-import" title="Import from a backup" aria-label="Import applications" style="cursor:pointer">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M12 21V9m0 0l4 4m-4-4L8 13M4 3h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Import
+                <input id="importJsonInput" type="file" accept="application/json" hidden>
+              </label>
+            </div>
           </div>
-          <button id="addBtn" class="btn btn-cta btn-add" title="Add a new application" aria-label="Add a new application">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-            </svg>
-            Add
-          </button>
-          <button id="exportJsonBtn" class="btn btn-cta btn-export" title="Download a backup" aria-label="Export applications">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            Export
-          </button>
-          <label for="importJsonInput" class="btn btn-cta btn-import" title="Import from a backup" aria-label="Import applications" style="cursor:pointer">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M12 21V9m0 0l4 4m-4-4L8 13M4 3h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            Import
-            <input id="importJsonInput" type="file" accept="application/json" hidden>
-          </label>
         </div>
       </div>
       <p class="footnote">Free to use. If this helps you land a job, maybe <a href="https://buymeacoffee.com/stevedrasco" class="link" target="_blank">throw its creator a bone</a>.</p>
