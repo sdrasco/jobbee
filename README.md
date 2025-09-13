@@ -1,7 +1,5 @@
 # Jobbee
 
-![Jobbee logo](jobbee_small.png)
-
 A tiny organization tool for job hunting.  Should look like this. 
 
 ![Screenshot of Jobbee](screenshot.png)
