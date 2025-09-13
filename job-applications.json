@@ -8,7 +8,7 @@
       "role": "King of England",
       "location": "London, UK",
       "appliedDate": "2025-09-02",
-      "status": "Applied",
+      "status": "Ghosted",
       "link": "https://example.com/jobs/the_crown_ltd_king_of_england",
       "notes": "Must enjoy waving, ribbon‑cutting, and constitutional nuance.",
       "lastUpdated": "2025-09-13T10:37:04Z"
@@ -19,7 +19,7 @@
       "role": "CEO of Google",
       "location": "Mountain View, CA, USA",
       "appliedDate": "2025-09-03",
-      "status": "Interviewing",
+      "status": "Ghosted",
       "link": "https://example.com/jobs/alphabet_google_ceo_of_google",
       "notes": "Oversee search for meaning and meaning of search.",
       "lastUpdated": "2025-09-13T10:37:04Z"
@@ -30,7 +30,7 @@
       "role": "Lord of the Flies",
       "location": "Deserted Island (Somewhere Pacific)",
       "appliedDate": "",
-      "status": "Rejected",
+      "status": "Declined",
       "link": "https://example.com/jobs/the_conch_committee_lord_of_the_flies",
       "notes": "Stakeholder management among very small stakeholders.",
       "lastUpdated": "2025-09-13T10:37:04Z"
@@ -41,7 +41,7 @@
       "role": "Prince of Persia",
       "location": "Shiraz, Persia (Temporal)",
       "appliedDate": "",
-      "status": "Unlikely match",
+      "status": "Withdrawn",
       "link": "https://example.com/jobs/royal_court_of_persia_prince_of_persia",
       "notes": "Excellent time‑rewind benefits.",
       "lastUpdated": "2025-09-13T10:37:04Z"
@@ -52,7 +52,7 @@
       "role": "Chief Dragon Wrangler",
       "location": "Dragonstone, The Narrow Sea",
       "appliedDate": "",
-      "status": "Prospect",
+      "status": "Withdrawn",
       "link": "https://example.com/jobs/dragonstone_holdings_chief_dragon_wrangl",
       "notes": "Fire‑resistant PPE provided.",
       "lastUpdated": "2025-09-13T10:37:04Z"
@@ -63,7 +63,7 @@
       "role": "Galactic Overlord",
       "location": "Death Star, Outer Rim",
       "appliedDate": "2025-09-07",
-      "status": "Applied",
+      "status": "Ghosted",
       "link": "https://example.com/jobs/galactic_empire_galactic_overlord",
       "notes": "Strong leadership. Very strong.",
       "lastUpdated": "2025-09-13T10:37:04Z"
@@ -74,7 +74,7 @@
       "role": "Wizard of Code",
       "location": "Scottish Highlands, UK",
       "appliedDate": "2025-09-08",
-      "status": "Interviewing",
+      "status": "Ghosted",
       "link": "https://example.com/jobs/hogwarts_it_department_wizard_of_code",
       "notes": "Turn bugs into features with a swish and flick.",
       "lastUpdated": "2025-09-13T10:37:04Z"
@@ -85,7 +85,7 @@
       "role": "Supreme Sandwich Artist",
       "location": "Panini, Italy",
       "appliedDate": "",
-      "status": "Rejected",
+      "status": "Declined",
       "link": "https://example.com/jobs/ministry_of_sandwiches_supreme_sandwich_",
       "notes": "Pan‑galactic panini planning.",
       "lastUpdated": "2025-09-13T10:37:04Z"
@@ -96,7 +96,7 @@
       "role": "Time‑Travel Project Manager",
       "location": "Everywhen (Remote)",
       "appliedDate": "",
-      "status": "Unlikely match",
+      "status": "Declined",
       "link": "https://example.com/jobs/department_of_temporal_affairs_time_trav",
       "notes": "Gantt charts with paradox handling.",
       "lastUpdated": "2025-09-13T10:37:04Z"
@@ -107,7 +107,7 @@
       "role": "Moon Colony Barista",
       "location": "Mare Tranquillitatis, The Moon",
       "appliedDate": "",
-      "status": "Prospect",
+      "status": "Declined",
       "link": "https://example.com/jobs/luna_coffee_cooperative_moon_colony_bari",
       "notes": "Low‑gravity latte art.",
       "lastUpdated": "2025-09-13T10:37:04Z"
@@ -118,7 +118,7 @@
       "role": "AI Whisperer",
       "location": "Undisclosed Bunker",
       "appliedDate": "2025-09-12",
-      "status": "Applied",
+      "status": "Ghosted",
       "link": "https://example.com/jobs/skynet_solutions_ai_whisperer",
       "notes": "Speak softly and carry a neural net.",
       "lastUpdated": "2025-09-13T10:37:04Z"
@@ -129,7 +129,7 @@
       "role": "Meme Economist",
       "location": "Cyberspace (Hybrid)",
       "appliedDate": "2025-09-13",
-      "status": "Interviewing",
+      "status": "Ghosted",
       "link": "https://example.com/jobs/dept_of_internet_memetics_meme_economist",
       "notes": "Quantify vibes; price the LOL.",
       "lastUpdated": "2025-09-13T10:37:04Z"
@@ -140,7 +140,7 @@
       "role": "Space Pirate Intern",
       "location": "The Void (Travel 100%)",
       "appliedDate": "",
-      "status": "Rejected",
+      "status": "Ghosted",
       "link": "https://example.com/jobs/freelance_pirates_guild_space_pirate_int",
       "notes": "Learn the ropes, avoid the airlocks.",
       "lastUpdated": "2025-09-13T10:37:04Z"
