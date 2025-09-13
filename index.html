@@ -1,0 +1,811 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Job Hunt</title>
+  <style>
+    :root{
+      /* Base palette */
+      --bg:#f6f7fb;
+      --card:#ffffff;
+      --text:#1f2937;
+      --muted:#6b7280;
+      --accent:#64748b;         /* slate */
+      --accent-strong:#475569;  /* darker slate */
+      --border:#e5e7eb;
+      --danger:#dc2626;
+      --radius:12px;
+      --radius-sm:10px;
+      --shadow: 0 1px 2px rgba(0,0,0,.04), 0 6px 12px rgba(0,0,0,.05);
+      --shadow-focus: 0 0 0 3px rgba(100,116,139,.18);
+
+      /* Button sizing */
+      --btn-h: 38px;
+      --btn-w: 116px;
+
+      /* CTA brand colors */
+      --add-bg:#10b981;        /* emerald-500 */
+      --add-bg-hover:#059669;  /* emerald-600 */
+      --export-bg:#3b82f6;     /* blue-500 */
+      --export-bg-hover:#2563eb;/* blue-600 */
+      --import-bg:#a855f7;     /* purple-500 */
+      --import-bg-hover:#7c3aed;/* purple-600 */
+
+      /* Status accent colors (left borders) */
+      --clr-strongmatch:#06b6d4; /* cyan-500 */
+      --clr-prospect:#6366f1;    /* indigo-500 */
+      --clr-unlikely:#94a3b8;    /* slate-400 */
+      --clr-applied:#10b981;     /* emerald-500 */
+      --clr-interview:#22c55e;   /* green-500 */
+      --clr-offer:#f59e0b;       /* amber-500 */
+      --clr-accepted:#16a34a;    /* green-600 */
+      --clr-rejected:#ef4444;    /* red-500 */
+      --clr-ghosted:#8b5cf6;     /* violet-500 */
+      --clr-withdrawn:#f97316;   /* orange-500 */
+      --clr-declined:#fb7185;    /* rose-400 */
+
+      /* Pastel fills (pills, optional) */
+      --status-strongmatch:#cffafe; /* cyan-100 */
+      --status-prospect:#eef2ff;    /* indigo-100 */
+      --status-unlikely:#e2e8f0;    /* slate-200 */
+      --status-applied:#bbf7d0;     /* green-200 */
+      --status-interview:#dcfce7;   /* green-100 */
+      --status-offer:#fef9c3;       /* yellow-100 */
+      --status-accepted:#bbf7d0;    /* green-200 */
+      --status-rejected:#fee2e2;    /* red-200 */
+      --status-ghosted:#ede9fe;     /* purple-100 */
+      --status-withdrawn:#fff7ed;   /* orange-100 */
+      --status-declined:#ffe4e6;    /* rose-200 */
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      color:var(--text);
+      background:var(--bg);
+      line-height:1.45;
+      font-size:16px;
+    }
+    .container{ max-width:1200px; margin: 24px auto 80px; padding:0 16px; }
+
+    /* Toolbar */
+    .toolbar{
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+      margin-bottom:16px; padding:14px 16px;
+      background:var(--card); border:1px solid var(--border); border-radius:var(--radius);
+      box-shadow:var(--shadow);
+    }
+    .title{ display:flex; align-items:center; gap:10px; }
+    h1{ font-size:1.25rem; margin:0; font-weight:650; letter-spacing:.2px; }
+    .subtitle{ margin:0; font-size:.85rem; color:var(--muted); }
+
+    .toolbar-actions{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+    .search{ position:relative; min-width:220px; }
+    .search input[type="search"]{
+      width:100%; padding:10px 12px 10px 34px; border:1px solid var(--border);
+      background:#fff; color:var(--text); border-radius:var(--radius-sm); outline:none;
+      height: var(--btn-h);
+    }
+    .search input[type="search"]:focus{ box-shadow: var(--shadow-focus) }
+    .search svg{ position:absolute; left:10px; top:50%; transform:translateY(-50%); pointer-events:none; }
+
+    select, input[type="text"], input[type="url"], input[type="date"], textarea{
+      width:100%; padding:10px 12px; border:1px solid var(--border); background:#fff; color:#111827; border-radius:var(--radius-sm); outline:none;
+    }
+    select{ height: var(--btn-h); }
+    select:focus, input:focus, textarea:focus{ box-shadow: var(--shadow-focus) }
+    textarea{ resize:vertical }
+
+    /* Buttons */
+    .btn{
+      display:inline-flex; align-items:center; justify-content:center; gap:8px;
+      padding:0 12px; border-radius:var(--radius-sm); border:1px solid var(--border);
+      background:#fff; color:var(--text); cursor:pointer; text-decoration:none;
+      transition: background .15s ease, border-color .15s ease, transform .02s ease-in-out, box-shadow .15s ease;
+      height: var(--btn-h); line-height:1; font-weight:500;
+    }
+    .btn:hover{ background:#f8fafc }
+    .btn:active{ transform: translateY(1px) }
+    .btn-cta{
+      width: var(--btn-w);
+      border-color: transparent;
+      color:#fff;
+      font-weight:600;
+    }
+    .btn-cta svg{ display:block }
+    .btn-add{ background: var(--add-bg); }
+    .btn-add:hover{ background: var(--add-bg-hover); }
+    .btn-export{ background: var(--export-bg); }
+    .btn-export:hover{ background: var(--export-bg-hover); }
+    .btn-import{ background: var(--import-bg); }
+    .btn-import:hover{ background: var(--import-bg-hover); }
+
+    /* On very small screens, let CTAs flex and share space */
+    @media (max-width: 520px){
+      .btn-cta{ width: auto; flex: 1 1 auto; }
+      .toolbar-actions{ gap:8px; }
+    }
+
+    .btn-danger{ border-color:#fecaca; background:#fff5f5; color:#991b1b; }
+    .btn-danger:hover{ background:#fee2e2 }
+    .btn-ghost{ background:transparent; }
+    .btn.icon-only span{ display:none }
+
+    /* Board */
+    .board{ display:grid; gap:16px; }
+    @media(min-width: 1200px){ .board{ grid-template-columns: repeat(4, minmax(0,1fr)); } }
+    @media(max-width:1199px){ .board{ grid-template-columns: repeat(3, minmax(0,1fr)); } }
+    @media(max-width:920px){ .board{ grid-template-columns: repeat(2, minmax(0,1fr)); } }
+    @media(max-width:600px){ .board{ grid-template-columns: 1fr; } }
+
+    .col{
+      display:flex; flex-direction:column; gap:10px;
+      background:var(--card); border:1px solid var(--border); border-radius:var(--radius);
+      box-shadow:var(--shadow); padding:10px; min-height:120px;
+    }
+    /* Drag & drop feedback */
+    .col.drag-over{ outline: 2px dashed var(--accent); outline-offset: -6px; background:#f8fafc; }
+    .col-body:empty::after{ content:"Drop here"; display:block; color:var(--muted); text-align:center; padding:16px 0; font-size:.9rem; }
+    .col-header{ display:flex; align-items:center; justify-content:space-between; gap:8px; padding:2px 4px 6px; border-bottom:1px dashed var(--border); }
+    .col-title{ display:flex; align-items:center; gap:8px; font-weight:600; }
+    .count{ font-size:.8rem; padding:2px 8px; border-radius:999px; background:#f1f5f9; color:#334155; }
+    .col-actions{ display:flex; align-items:center; gap:6px; }
+
+    .col-body{ padding-top:6px; }
+
+    /* Collapsed stack (overlapped chips showing company only) */
+    .stack{ position:relative; padding-bottom:6px; }
+    .stack-item{
+      display:block; width:100%;
+      text-align:left;
+      background:#fff;
+      border:1px solid var(--border);
+      border-left:4px solid transparent;
+      border-radius:10px;
+      box-shadow: 0 1px 1px rgba(0,0,0,.04), 0 6px 14px rgba(0,0,0,.06);
+      padding:10px 12px;
+      margin-top:-16px;            /* overlap amount */
+      position:relative;
+      z-index:0;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      color:#111827;
+      cursor:pointer;
+    }
+    .stack-item[draggable="true"], .app-card[draggable="true"]{ cursor: grab; }
+    .stack-item[aria-grabbed="true"], .app-card[aria-grabbed="true"]{ cursor: grabbing; }
+    .stack-item:first-child{ margin-top:0 }
+    .stack-item:hover{ transform: translateY(-1px); }
+    .stack-item:focus{ outline:none; box-shadow: var(--shadow-focus); }
+    .stack-item[data-status="Strong match"]   { border-left-color: var(--clr-strongmatch); }
+    .stack-item[data-status="Prospect"]       { border-left-color: var(--clr-prospect); }
+    .stack-item[data-status="Unlikely match"] { border-left-color: var(--clr-unlikely); }
+    .stack-item[data-status="Applied"]        { border-left-color: var(--clr-applied); }
+    .stack-item[data-status="Interviewing"]   { border-left-color: var(--clr-interview); }
+    .stack-item[data-status="Offer"]          { border-left-color: var(--clr-offer); }
+    .stack-item[data-status="Accepted"]       { border-left-color: var(--clr-accepted); }
+    .stack-item[data-status="Rejected"]       { border-left-color: var(--clr-rejected); }
+    .stack-item[data-status="Ghosted"]        { border-left-color: var(--clr-ghosted); }
+    .stack-item[data-status="Withdrawn"]      { border-left-color: var(--clr-withdrawn); }
+    .stack-item[data-status="Declined"]       { border-left-color: var(--clr-declined); }
+
+    /* Expanded cards — use attribute selectors so spaces in status are OK */
+    .app-card{
+      background:#fff; border:1px solid var(--border); border-left:4px solid transparent;
+      border-radius:12px; box-shadow:var(--shadow); padding:12px; margin-bottom:10px;
+    }
+    .app-card[data-status="Strong match"]   { border-left-color: var(--clr-strongmatch); }
+    .app-card[data-status="Prospect"]       { border-left-color: var(--clr-prospect); }
+    .app-card[data-status="Unlikely match"] { border-left-color: var(--clr-unlikely); }
+    .app-card[data-status="Applied"]        { border-left-color: var(--clr-applied); }
+    .app-card[data-status="Interviewing"]   { border-left-color: var(--clr-interview); }
+    .app-card[data-status="Offer"]          { border-left-color: var(--clr-offer); }
+    .app-card[data-status="Accepted"]       { border-left-color: var(--clr-accepted); }
+    .app-card[data-status="Rejected"]       { border-left-color: var(--clr-rejected); }
+    .app-card[data-status="Ghosted"]        { border-left-color: var(--clr-ghosted); }
+    .app-card[data-status="Withdrawn"]      { border-left-color: var(--clr-withdrawn); }
+    .app-card[data-status="Declined"]       { border-left-color: var(--clr-declined); }
+
+    .app-head{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+    .app-title{ font-weight:650; }
+    .role{ color:#374151; font-weight:500; }
+    .meta{ color:var(--muted); font-size:.9rem; margin-top:2px; }
+    .note{ margin-top:8px; color:#111827; }
+    .link{ color:#0b5ed7; text-decoration:none; }
+    .link:hover{ text-decoration:underline }
+
+    /* Icons */
+    .icon-btn{ border:none; background:transparent; cursor:pointer; color:#6b7280; display:inline-flex; align-items:center; border-radius:8px; padding:6px; }
+    .icon-btn:hover{ background:#f3f4f6; color:#111827 }
+    .nowrap{ white-space:nowrap }
+
+    .empty{ display:none; text-align:center; color:var(--muted); padding:28px 8px 8px; }
+    .footnote{ margin-top:10px; font-size:.85rem; color:var(--muted); }
+
+    /* Modal (dialog) */
+    dialog.modal{ width:min(760px, 96vw); border:none; padding:0; border-radius: var(--radius); box-shadow: 0 20px 60px rgba(0,0,0,.22); }
+    dialog::backdrop{ background: rgba(15,23,42,.45); backdrop-filter: blur(2px); }
+    .modal-header{ display:flex; align-items:center; justify-content:space-between; padding:16px 18px; border-bottom:1px solid var(--border); background:#fff; border-top-left-radius: var(--radius); border-top-right-radius: var(--radius); }
+    .modal-body{ padding:16px 18px }
+    .modal-footer{ padding:14px 18px 18px; display:flex; gap:10px; justify-content:flex-end; border-top:1px solid var(--border); background:#fff; border-bottom-left-radius: var(--radius); border-bottom-right-radius: var(--radius); }
+
+    .grid{ display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:12px; }
+    .grid .full{ grid-column: 1 / -1 }
+    .field label{ display:block; margin: 6px 0 6px; font-size:.9rem; color:#374151; font-weight:600; }
+    .req{ color:#ef4444; margin-left:2px }
+
+    /* Small screens */
+    @media (max-width: 760px){
+      .toolbar{ flex-direction:column; align-items:stretch }
+      .toolbar-actions{ justify-content:space-between }
+      .grid{ grid-template-columns: 1fr }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="toolbar">
+      <div class="title">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M4 7.5A2.5 2.5 0 0 1 6.5 5h11A2.5 2.5 0 0 1 20 7.5V18a1 1 0 0 1-1.447.894L12 16l-6.553 2.894A1 1 0 0 1 4 18V7.5Z" stroke="#475569" stroke-width="1.5" />
+        </svg>
+        <div>
+          <h1>Job Hunt</h1>
+          <p class="subtitle">Hunt or be hunted.</p>
+        </div>
+      </div>
+      <div class="toolbar-actions">
+        <div class="search">
+          <input id="search" type="search" placeholder="Keyword Filter" aria-label="Search applications">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle cx="11" cy="11" r="7" stroke="#94a3b8" stroke-width="1.5"/>
+            <path d="M20 20l-3.5-3.5" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <select id="sort" aria-label="Sort">
+          <option value="date_desc">Newest first</option>
+          <option value="date_asc">Oldest first</option>
+          <option value="company_asc">Company A–Z</option>
+          <option value="company_desc">Company Z–A</option>
+        </select>
+        <button id="addBtn" class="btn btn-cta btn-add" title="Add a new application" aria-label="Add a new application">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+          Add
+        </button>
+        <button id="exportJsonBtn" class="btn btn-cta btn-export" title="Download a backup" aria-label="Export applications">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Export
+        </button>
+        <label for="importJsonInput" class="btn btn-cta btn-import" title="Import from a backup" aria-label="Import applications" style="cursor:pointer">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 21V9m0 0l4 4m-4-4L8 13M4 3h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Import
+          <input id="importJsonInput" type="file" accept="application/json" hidden>
+        </label>
+      </div>
+    </div>
+
+    <div id="board" class="board" aria-live="polite"></div>
+    <p id="emptyState" class="empty">No applications yet. Click <b>Add</b> to create your first entry.</p>
+    <p class="footnote">Your data is saved privately in this browser (localStorage). Use Export to back up and Import to restore.</p>
+  </div>
+
+  <!-- Add / Edit Modal -->
+  <dialog id="entryModal" class="modal" aria-labelledby="modalTitle" aria-modal="true">
+    <form id="entryForm" method="dialog">
+      <div class="modal-header">
+        <h2 id="modalTitle" style="margin:0;font-size:1.1rem">Add application</h2>
+        <button type="button" class="icon-btn" id="closeModalBtn" aria-label="Close">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="grid">
+          <div class="field">
+            <label for="companyInput">Company<span class="req">*</span></label>
+            <input id="companyInput" type="text" placeholder="e.g., Acme Corp" required>
+          </div>
+          <div class="field">
+            <label for="roleInput">Role / Position<span class="req">*</span></label>
+            <input id="roleInput" type="text" placeholder="e.g., Data Scientist" required>
+          </div>
+          <div class="field">
+            <label for="locationInput">Location</label>
+            <input id="locationInput" type="text" placeholder="e.g., Remote · NYC · London">
+          </div>
+          <div class="field">
+            <label for="dateInput">Date applied</label>
+            <input id="dateInput" type="date">
+          </div>
+          <div class="field">
+            <label for="statusInput">Status</label>
+            <select id="statusInput">
+              <option>Strong match</option>
+              <option>Prospect</option>
+              <option>Unlikely match</option>
+              <option>Applied</option>
+              <option>Interviewing</option>
+              <option>Offer</option>
+              <option>Accepted</option>
+              <option>Rejected</option>
+              <option>Ghosted</option>
+              <option>Withdrawn</option>
+              <option>Declined</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="linkInput">Link (job post / tracker)</label>
+            <input id="linkInput" type="url" placeholder="https://example.com/job">
+          </div>
+          <div class="field full">
+            <label for="notesInput">Notes</label>
+            <textarea id="notesInput" rows="4" placeholder="Add details, contact name, follow-ups…"></textarea>
+          </div>
+        </div>
+        <input id="editId" type="hidden" />
+      </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-cta btn-add" id="saveEntryBtn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 7l-9 9-4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Save
+        </button>
+        <button type="button" class="btn" id="cancelEntryBtn">Cancel</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script>
+  (function(){
+    "use strict";
+
+    const LS_KEY = "jobApplications.v1";
+    const SORT_KEY = "jobApplications.sort.v1";
+    const COL_STATE_KEY = "jobApplications.columnsCollapsed.v1";
+
+    const STATUS_ORDER = [
+      "Strong match","Prospect","Unlikely match","Applied","Interviewing","Offer","Accepted","Rejected","Ghosted","Withdrawn","Declined"
+    ];
+
+    /** @type {Array<{ id:string, company:string, role:string, location?:string, appliedDate?:string, status?:string, link?:string, notes?:string, lastUpdated?:string }>} */
+    let items = [];
+
+    /** @type {Record<string, boolean>} true => collapsed */
+    let collapsed = {};
+
+    // Elements
+    const els = {
+      board: document.getElementById("board"),
+      empty: document.getElementById("emptyState"),
+      search: document.getElementById("search"),
+      sort: document.getElementById("sort"),
+      addBtn: document.getElementById("addBtn"),
+      exportJsonBtn: document.getElementById("exportJsonBtn"),
+      importJsonInput: document.getElementById("importJsonInput"),
+      // modal
+      modal: document.getElementById("entryModal"),
+      form: document.getElementById("entryForm"),
+      modalTitle: document.getElementById("modalTitle"),
+      closeModalBtn: document.getElementById("closeModalBtn"),
+      cancelEntryBtn: document.getElementById("cancelEntryBtn"),
+      companyInput: document.getElementById("companyInput"),
+      roleInput: document.getElementById("roleInput"),
+      locationInput: document.getElementById("locationInput"),
+      dateInput: document.getElementById("dateInput"),
+      statusInput: document.getElementById("statusInput"),
+      linkInput: document.getElementById("linkInput"),
+      notesInput: document.getElementById("notesInput"),
+      editId: document.getElementById("editId"),
+    };
+
+    // Load + init
+    load();
+    initUI();
+    render();
+
+    function load(){
+      try{
+        const raw = localStorage.getItem(LS_KEY);
+        items = raw ? JSON.parse(raw) : [];
+        if(!Array.isArray(items)) items = [];
+      }catch(e){ items = []; }
+      try{
+        const cs = localStorage.getItem(COL_STATE_KEY);
+        collapsed = cs ? JSON.parse(cs) : {};
+      }catch(e){ collapsed = {}; }
+      // Default to collapsed for all columns unless explicitly set
+      for(const s of STATUS_ORDER){
+        if(typeof collapsed[s] !== "boolean") collapsed[s] = true;
+      }
+    }
+    function save(){ localStorage.setItem(LS_KEY, JSON.stringify(items)); }
+    function saveColState(){ localStorage.setItem(COL_STATE_KEY, JSON.stringify(collapsed)); }
+
+    function initUI(){
+      // Persisted sort
+      const savedSort = localStorage.getItem(SORT_KEY) || "date_desc";
+      els.sort.value = savedSort;
+
+      // Search & sort
+      els.search.addEventListener("input", debounce(render, 120));
+      els.sort.addEventListener("change", () => { localStorage.setItem(SORT_KEY, els.sort.value); render(); });
+
+      // Modal wiring
+      els.addBtn.addEventListener("click", () => openModal());
+      els.cancelEntryBtn.addEventListener("click", closeModal);
+      els.closeModalBtn.addEventListener("click", closeModal);
+      els.form.addEventListener("submit", onSave);
+
+      // Export / Import
+      els.exportJsonBtn.addEventListener("click", exportJSON);
+      els.importJsonInput.addEventListener("change", importJSON);
+
+      // Delegated actions on the board (edit/delete/toggles/stack item click)
+      els.board.addEventListener("click", (ev) => {
+        const toggle = ev.target.closest("[data-col-toggle]");
+        if(toggle){
+          const status = toggle.getAttribute("data-col-toggle");
+          collapsed[status] = !collapsed[status];
+          saveColState();
+          render();
+          return;
+        }
+        const delBtn = ev.target.closest(".btn-delete");
+        if(delBtn){
+          const card = delBtn.closest("[data-id]");
+          if(!card) return;
+          const id = card.getAttribute("data-id");
+          const ok = confirm("Delete this entry?");
+          if(!ok) return;
+          const idx = items.findIndex(x => x.id === id);
+          if(idx >= 0){ items.splice(idx,1); save(); render(); }
+          return;
+        }
+        const editBtn = ev.target.closest(".btn-edit");
+        if(editBtn){
+          const card = editBtn.closest("[data-id]");
+          if(!card) return;
+          const id = card.getAttribute("data-id");
+          const entry = items.find(x => x.id === id);
+          if(entry) openModal(entry);
+          return;
+        }
+        const stackItem = ev.target.closest(".stack-item");
+        if(stackItem){
+          // Clicking a collapsed chip opens the editor for quick edits
+          const id = stackItem.getAttribute("data-id");
+          const entry = items.find(x => x.id === id);
+          if(entry) openModal(entry);
+          return;
+        }
+      });
+
+      // Default date for modal
+      els.dateInput.value = todayISO();
+    }
+
+    function render(){
+      const q = (els.search.value || "").trim().toLowerCase();
+      const sortBy = els.sort.value;
+
+      let list = items.slice();
+
+      // Filter
+      if(q){
+        list = list.filter(it => includes(it.company, q) || includes(it.role, q) || includes(it.location, q) || includes(it.status, q) || includes(it.notes, q));
+      }
+
+      // Sort (applies within columns later; we pre-sort for simple grouping)
+      const sorters = {
+        "date_desc": (a,b) => (b.appliedDate||"").localeCompare(a.appliedDate||""),
+        "date_asc":  (a,b) => (a.appliedDate||"").localeCompare(b.appliedDate||""),
+        "company_asc":  (a,b) => (a.company||"").localeCompare(b.company||""),
+        "company_desc": (a,b) => (b.company||"").localeCompare(a.company||""),
+      };
+      const sorter = sorters[sortBy] || sorters["date_desc"];
+      list.sort(sorter);
+
+      // Group by status
+      const groups = Object.create(null);
+      for(const s of STATUS_ORDER) groups[s] = [];
+      for(const it of list){
+        const s = normalizeStatus(it.status);
+        if(!groups[s]) groups[s] = [];
+        groups[s].push(it);
+      }
+
+      // Clear
+      els.board.innerHTML = "";
+
+      // Empty state — if nothing to render, show message.
+      const total = Object.values(groups).reduce((acc,arr)=>acc+arr.length,0);
+      if(total === 0){
+        els.empty.textContent = items.length && q ? "No applications match your search." : "No applications yet. Click Add to create your first entry.";
+        els.empty.style.display = "block";
+      }else{
+        els.empty.style.display = "none";
+      }
+
+      // Render columns — skip any status with zero cards
+      for(const status of STATUS_ORDER){
+        const arr = groups[status] || [];
+        if(arr.length === 0) continue; // hide empty columns
+
+        const col = document.createElement("section");
+        col.className = "col";
+        col.setAttribute("data-status", status);
+        col.setAttribute("aria-label", status + " column");
+
+        // Header
+        const header = document.createElement("div");
+        header.className = "col-header";
+        header.innerHTML = `
+          <div class="col-title">
+            <span>${status}</span>
+            <span class="count" aria-label="Count">${arr.length}</span>
+          </div>
+          <div class="col-actions">
+            <button class="icon-btn" data-col-toggle="${status}" title="${collapsed[status] ? "Expand" : "Collapse"} this column" aria-label="${collapsed[status] ? "Expand" : "Collapse"} ${status} column">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                ${collapsed[status]
+                  ? '<path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>'
+                  : '<path d="M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>'}
+              </svg>
+            </button>
+          </div>`;
+        col.appendChild(header);
+
+        const body = document.createElement("div");
+        body.className = "col-body";
+        body.setAttribute("data-status", status);
+        // Make column a drop target
+        wireDropZone(col, status);
+
+        if(collapsed[status]){
+          // Collapsed: overlapped stack showing company only
+          const stack = document.createElement("div");
+          stack.className = "stack";
+          for(const it of arr){
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "stack-item";
+            btn.setAttribute("data-id", it.id);
+            btn.setAttribute("data-status", status);
+            btn.setAttribute("title", (it.company||"") + (it.role ? " — " + it.role : ""));
+            btn.textContent = it.company || "—";
+            // Draggable in collapsed view
+            makeDraggable(btn, it.id);
+            stack.appendChild(btn);
+          }
+          body.appendChild(stack);
+        }else{
+          // Expanded: full cards
+          for(const it of arr){
+            const card = document.createElement("article");
+            card.className = "app-card";
+            card.setAttribute("data-id", it.id);
+            card.setAttribute("data-status", status);
+            card.innerHTML = `
+              <div class="app-head">
+                <div class="app-title">
+                  <span>${escapeHTML(it.company || "—")}</span>
+                  <span class="role">— ${escapeHTML(it.role || "—")}</span>
+                </div>
+                <div class="app-actions nowrap">
+                  <button type="button" class="icon-btn btn-edit" title="Edit entry" aria-label="Edit">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <path d="M4 20h4L18.5 9.5a2.828 2.828 0 10-4-4L4 16v4z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </button>
+                  <button type="button" class="icon-btn btn-delete" title="Delete entry" aria-label="Delete">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div class="meta">
+                ${it.appliedDate ? `<span>${escapeHTML(it.appliedDate)}</span>` : ""}
+                ${it.location ? ` · <span>${escapeHTML(it.location)}</span>` : ""}
+                ${it.link ? ` · <a class="link" href="${escapeAttr(it.link)}" target="_blank" rel="noopener noreferrer">Open</a>` : ""}
+              </div>
+              ${it.notes ? `<div class="note">${escapeHTML(it.notes)}</div>` : ""}
+            `;
+            // Draggable in expanded view
+            makeDraggable(card, it.id);
+            body.appendChild(card);
+          }
+        }
+
+        col.appendChild(body);
+        els.board.appendChild(col);
+      }
+    }
+
+    function openModal(entry){
+      els.form.reset();
+      els.modalTitle.textContent = entry ? "Edit application" : "Add application";
+
+      const today = todayISO();
+      els.companyInput.value = entry?.company || "";
+      els.roleInput.value = entry?.role || "";
+      els.locationInput.value = entry?.location || "";
+      els.dateInput.value = entry?.appliedDate || today;
+      els.statusInput.value = normalizeStatus(entry?.status || "Applied");
+      els.linkInput.value = entry?.link || "";
+      els.notesInput.value = entry?.notes || "";
+      els.editId.value = entry?.id || "";
+
+      if(typeof els.modal.showModal === "function"){ els.modal.showModal(); }
+      else { els.modal.setAttribute("open","true"); }
+      setTimeout(() => { els.companyInput.focus(); }, 0);
+    }
+
+    function closeModal(){
+      if(typeof els.modal.close === "function"){ els.modal.close(); }
+      else { els.modal.removeAttribute("open"); }
+    }
+
+    function onSave(ev){
+      ev.preventDefault();
+      const company = els.companyInput.value.trim();
+      const role = els.roleInput.value.trim();
+      if(!company || !role){ alert("Please provide at least Company and Role."); return; }
+      const entry = {
+        id: els.editId.value || genId(),
+        company,
+        role,
+        location: els.locationInput.value.trim(),
+        appliedDate: els.dateInput.value || todayISO(),
+        status: normalizeStatus(els.statusInput.value) || "Applied",
+        link: els.linkInput.value.trim(),
+        notes: els.notesInput.value.trim(),
+        lastUpdated: new Date().toISOString()
+      };
+
+      const existingIdx = items.findIndex(x => x.id === entry.id);
+      if(existingIdx >= 0){ items[existingIdx] = entry; }
+      else { items.push(entry); }
+
+      save();
+      render();
+      closeModal();
+    }
+
+    // Export / Import
+
+    function exportJSON(){
+      const payload = { schema: 1, exportedAt: new Date().toISOString(), data: items };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], {type:"application/json"});
+      const url = URL.createObjectURL(blob);
+      download(url, "job-applications.json");
+    }
+    function importJSON(ev){
+      const file = ev.target.files && ev.target.files[0];
+      ev.target.value = "";
+      if(!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try{
+          const text = String(reader.result || "");
+          const obj = JSON.parse(text);
+          const arr = Array.isArray(obj) ? obj : (Array.isArray(obj.data) ? obj.data : null);
+          if(!arr) throw new Error("Invalid JSON structure.");
+          const modeReplace = confirm("Replace existing entries? Click OK to replace, Cancel to merge.");
+          if(modeReplace) items = [];
+          let count = 0;
+          for(const e of arr){
+            if(!e || typeof e !== "object") continue;
+            if(!e.company || !e.role) continue;
+            const entry = {
+              id: typeof e.id === "string" && e.id ? e.id : genId(),
+              company: String(e.company || "").trim(),
+              role: String(e.role || "").trim(),
+              location: String(e.location || ""),
+              appliedDate: e.appliedDate || "",
+              status: normalizeStatus(e.status || "Applied"),
+              link: String(e.link || ""),
+              notes: String(e.notes || ""),
+              lastUpdated: e.lastUpdated || new Date().toISOString()
+            };
+            // dedupe by id
+            const idx = items.findIndex(x => x.id === entry.id);
+            if(idx >= 0) items[idx] = entry; else items.push(entry);
+            count++;
+          }
+          save(); render();
+          alert("Imported " + count + " entr" + (count===1?"y":"ies") + ".");
+        }catch(err){ alert("Import failed: " + (err && err.message ? err.message : err)); }
+      };
+      reader.readAsText(file);
+    }
+
+    // Helpers
+
+    function todayISO(){
+      const d = new Date();
+      const pad = n => String(n).padStart(2,"0");
+      return d.getFullYear() + "-" + pad(d.getMonth()+1) + "-" + pad(d.getDate());
+    }
+    function genId(){ return "id_" + Math.random().toString(36).slice(2) + Date.now().toString(36); }
+    function includes(val, q){ return (val || "").toLowerCase().includes(q); }
+    function debounce(fn, ms){ let t; return (...args) => { clearTimeout(t); t = setTimeout(() => fn.apply(null,args), ms); }; }
+    function normalizeStatus(s){
+      const v = String(s || "").toLowerCase();
+      if(v.startsWith("strong")) return "Strong match";
+      if(v.includes("unlikely")) return "Unlikely match";
+      if(v.startsWith("prospect")) return "Prospect";
+      if(v.startsWith("interview")) return "Interviewing";
+      if(v==="offer") return "Offer";
+      if(v==="accepted") return "Accepted";
+      if(v==="rejected") return "Rejected";
+      if(v==="ghosted") return "Ghosted";
+      if(v==="withdrawn") return "Withdrawn";
+      if(v==="declined") return "Declined";
+      return "Applied";
+    }
+
+    function escapeHTML(s){
+      return String(s||"").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+    }
+    function escapeAttr(s){
+      return escapeHTML(s).replace(/"/g, '&quot;');
+    }
+
+    function download(url, filename){
+      const a = document.createElement("a");
+      a.href = url; a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 0);
+    }
+
+    // Drag & Drop helpers
+    function makeDraggable(el, id){
+      el.setAttribute("draggable","true");
+      el.addEventListener("dragstart", (e) => {
+        try{ e.dataTransfer.setData("text/plain", id); }catch(_){}
+        if(e.dataTransfer) e.dataTransfer.effectAllowed = "move";
+        el.setAttribute("aria-grabbed","true");
+      });
+      el.addEventListener("dragend", () => { el.removeAttribute("aria-grabbed"); });
+    }
+    function wireDropZone(colEl, status){
+      // use the column section as the dropzone to have a larger target
+      const onDragOver = (e) => {
+        e.preventDefault();
+        if(e.dataTransfer) e.dataTransfer.dropEffect = "move";
+        colEl.classList.add("drag-over");
+      };
+      const onDragLeave = () => { colEl.classList.remove("drag-over"); };
+      const onDrop = (e) => {
+        e.preventDefault();
+        colEl.classList.remove("drag-over");
+        const id = (e.dataTransfer && e.dataTransfer.getData("text/plain")) || "";
+        if(!id) return;
+        const idx = items.findIndex(x => x.id === id);
+        if(idx < 0) return;
+        const s = normalizeStatus(status);
+        if(items[idx].status !== s){
+          items[idx].status = s;
+          items[idx].lastUpdated = new Date().toISOString();
+          save();
+          render();
+        }
+      };
+      colEl.addEventListener("dragover", onDragOver);
+      colEl.addEventListener("dragenter", onDragOver);
+      colEl.addEventListener("dragleave", onDragLeave);
+      colEl.addEventListener("drop", onDrop);
+    }
+  })();
+  </script>
+</body>
+</html>
