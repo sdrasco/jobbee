@@ -241,6 +241,8 @@
 
     .empty{ display:none; text-align:center; color:var(--muted); padding:28px 8px 8px; }
     .footnote{ margin-top:10px; font-size:.85rem; color:var(--muted); }
+    .footnote-bar{ margin-top:10px; font-size:.85rem; color:var(--muted); display:flex; align-items:center; justify-content:space-between; }
+    .footnote-bar p{ margin:0; }
 
     /* Modal (dialog) */
     dialog.modal{ width:min(760px, 96vw); border:none; padding:0; border-radius: var(--radius); box-shadow: 0 20px 60px rgba(0,0,0,.22); }
@@ -313,7 +315,10 @@
 
     <div id="board" class="board" aria-live="polite"></div>
     <p id="emptyState" class="empty">No applications yet. Click <b>Add</b> to create your first entry. <br> Or <a href="job-applications.json" download>download our silly example file</a> and import it to see how things look.</p>
-    <p class="footnote" title="To delete your data:&#10;1) Open your browser's developer tools (press F12).&#10;2) Go to the Application or Storage tab, then Local Storage for this site.&#10;3) Delete jobApplications.v1, jobApplications.columnsCollapsed.v1, and jobApplications.sort.v1, or clear all site data.&#10;You can also run localStorage.removeItem('jobApplications.v1') and similar commands in the console.">We do not collect or store any data. All processing happens locally on your device.</p>
+    <div class="footnote-bar">
+      <p>We do not collect or store any data. All processing happens locally on your device.</p>
+      <button id="clearDataBtn" class="btn btn-danger">Clear data</button>
+    </div>
   </div>
 
   <!-- Add / Edit Modal -->
@@ -407,6 +412,7 @@
       addBtn: document.getElementById("addBtn"),
       exportJsonBtn: document.getElementById("exportJsonBtn"),
       importJsonInput: document.getElementById("importJsonInput"),
+      clearDataBtn: document.getElementById("clearDataBtn"),
       // modal
       modal: document.getElementById("entryModal"),
       form: document.getElementById("entryForm"),
@@ -460,6 +466,19 @@
     function save(){ localStorage.setItem(LS_KEY, JSON.stringify(items)); }
     function saveColState(){ localStorage.setItem(COL_STATE_KEY, JSON.stringify(collapsed)); }
 
+    function clearData(){
+      const ok = confirm("Clear all locally stored data?");
+      if(!ok) return;
+      localStorage.removeItem(LS_KEY);
+      localStorage.removeItem(COL_STATE_KEY);
+      localStorage.removeItem(SORT_KEY);
+      items = [];
+      collapsed = {};
+      for(const s of STATUS_ORDER){ collapsed[s] = true; }
+      els.sort.value = "date_desc";
+      render();
+    }
+
     function initUI(){
       // Persisted sort
       const savedSort = localStorage.getItem(SORT_KEY) || "date_desc";
@@ -478,6 +497,9 @@
       // Export / Import
       els.exportJsonBtn.addEventListener("click", exportJSON);
       els.importJsonInput.addEventListener("change", importJSON);
+
+      // Clear local data
+      els.clearDataBtn.addEventListener("click", clearData);
 
       // Delegated actions on the board (edit/delete/toggles/stack item click)
       els.board.addEventListener("click", (ev) => {
