@@ -345,7 +345,7 @@
             <input id="locationInput" type="text" placeholder="e.g., Remote · NYC · London">
           </div>
           <div class="field">
-            <label for="dateInput">Date applied</label>
+            <label for="dateInput">Date recorded</label>
             <input id="dateInput" type="date">
           </div>
           <div class="field">
@@ -397,7 +397,7 @@
       "Strong match","Prospect","Unlikely match","Applied","Interviewing","Offer","Accepted","Rejected","Ghosted","Withdrawn","Declined"
     ];
 
-    /** @type {Array<{ id:string, company:string, role:string, location?:string, appliedDate?:string, status?:string, link?:string, notes?:string, lastUpdated?:string }>} */
+    /** @type {Array<{ id:string, company:string, role:string, location?:string, recordedDate?:string, status?:string, link?:string, notes?:string, lastUpdated?:string }>} */
     let items = [];
 
     /** @type {Record<string, boolean>} true => collapsed */
@@ -434,12 +434,23 @@
     initUI();
     render();
 
+    function migrateDateField(arr){
+      return arr.map(it => {
+        if(it && typeof it === "object"){
+          if(it.recordedDate === undefined) it.recordedDate = it.appliedDate || "";
+          delete it.appliedDate;
+        }
+        return it;
+      });
+    }
+
     function load(){
       try{
         const raw = localStorage.getItem(LS_KEY);
         items = raw ? JSON.parse(raw) : [];
         if(!Array.isArray(items)) items = [];
       }catch(e){ items = []; }
+      items = migrateDateField(items);
       if(items.length === 0){
         (async () => {
           try{
@@ -447,7 +458,7 @@
             const obj = await res.json();
             const arr = Array.isArray(obj) ? obj : (Array.isArray(obj.data) ? obj.data : []);
             if(Array.isArray(arr)){
-              items = arr;
+              items = migrateDateField(arr);
               save();
               render();
             }
@@ -558,8 +569,8 @@
 
       // Sort (applies within columns later; we pre-sort for simple grouping)
       const sorters = {
-        "date_desc": (a,b) => (b.appliedDate||"").localeCompare(a.appliedDate||""),
-        "date_asc":  (a,b) => (a.appliedDate||"").localeCompare(b.appliedDate||""),
+        "date_desc": (a,b) => (b.recordedDate||"").localeCompare(a.recordedDate||""),
+        "date_asc":  (a,b) => (a.recordedDate||"").localeCompare(b.recordedDate||""),
         "company_asc":  (a,b) => (a.company||"").localeCompare(b.company||""),
         "company_desc": (a,b) => (b.company||"").localeCompare(a.company||""),
       };
@@ -670,7 +681,7 @@
                 </div>
               </div>
               <div class="meta">
-                ${it.appliedDate ? `<span>${escapeHTML(it.appliedDate)}</span>` : ""}
+                ${it.recordedDate ? `<span>${escapeHTML(it.recordedDate)}</span>` : ""}
                 ${it.location ? ` · <span>${escapeHTML(it.location)}</span>` : ""}
                 ${it.link ? ` · <a class="link" href="${escapeAttr(it.link)}" target="_blank" rel="noopener noreferrer">Open</a>` : ""}
               </div>
@@ -695,7 +706,7 @@
       els.companyInput.value = entry?.company || "";
       els.roleInput.value = entry?.role || "";
       els.locationInput.value = entry?.location || "";
-      els.dateInput.value = entry?.appliedDate || today;
+      els.dateInput.value = entry?.recordedDate || today;
       els.statusInput.value = normalizeStatus(entry?.status || "Applied");
       els.linkInput.value = entry?.link || "";
       els.notesInput.value = entry?.notes || "";
@@ -721,7 +732,7 @@
         company,
         role,
         location: els.locationInput.value.trim(),
-        appliedDate: els.dateInput.value || todayISO(),
+        recordedDate: els.dateInput.value || todayISO(),
         status: normalizeStatus(els.statusInput.value) || "Applied",
         link: els.linkInput.value.trim(),
         notes: els.notesInput.value.trim(),
@@ -767,7 +778,7 @@
               company: String(e.company || "").trim(),
               role: String(e.role || "").trim(),
               location: String(e.location || ""),
-              appliedDate: e.appliedDate || "",
+              recordedDate: e.recordedDate || e.appliedDate || "",
               status: normalizeStatus(e.status || "Applied"),
               link: String(e.link || ""),
               notes: String(e.notes || ""),
