@@ -248,6 +248,7 @@
     dialog.modal{ width:min(760px, 96vw); border:none; padding:0; border-radius: var(--radius); box-shadow: 0 20px 60px rgba(0,0,0,.22); }
     dialog::backdrop{ background: rgba(15,23,42,.45); backdrop-filter: blur(2px); }
     .modal-header{ display:flex; align-items:center; justify-content:space-between; padding:16px 18px; border-bottom:1px solid var(--border); background:#fff; border-top-left-radius: var(--radius); border-top-right-radius: var(--radius); }
+    .modal-title{ margin:0; font-size:1.1rem; }
     .modal-body{ padding:16px 18px }
     .modal-footer{ padding:14px 18px 18px; display:flex; gap:10px; justify-content:flex-end; border-top:1px solid var(--border); background:#fff; border-bottom-left-radius: var(--radius); border-bottom-right-radius: var(--radius); }
 
@@ -325,7 +326,7 @@
   <dialog id="entryModal" class="modal" aria-labelledby="modalTitle" aria-modal="true">
     <form id="entryForm" method="dialog">
       <div class="modal-header">
-        <h2 id="modalTitle" style="margin:0;font-size:1.1rem">Add application</h2>
+        <div id="modalTitle" class="modal-title">Add application</div>
         <button type="button" class="icon-btn" id="closeModalBtn" aria-label="Close">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
         </button>
@@ -700,7 +701,20 @@
 
     function openModal(entry){
       els.form.reset();
-      els.modalTitle.textContent = entry ? "Edit application" : "Add application";
+      if(entry){
+        els.modalTitle.innerHTML = `
+          <div class="app-title">
+            <span>${escapeHTML(entry.company || "—")}</span>
+            <span class="role">— ${escapeHTML(entry.role || "—")}</span>
+          </div>
+          <div class="meta">
+            ${entry.location ? `<span>${escapeHTML(entry.location)}</span>` : ""}
+            ${entry.link ? ` · <a class="link" href="${escapeAttr(entry.link)}" target="_blank" rel="noopener noreferrer">Open</a>` : ""}
+          </div>
+        `;
+      }else{
+        els.modalTitle.textContent = "Add application";
+      }
 
       const today = todayISO();
       els.companyInput.value = entry?.company || "";
