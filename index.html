@@ -108,6 +108,10 @@
     }
     select{ height: var(--btn-h); }
     select:focus, input:focus, textarea:focus{ box-shadow: var(--shadow-focus) }
+    .status-control{ display:flex; align-items:center; gap:8px; }
+    .status-control select{ flex:1; }
+    .btn-status-add{ flex-shrink:0; white-space:nowrap; }
+    .btn-status-add svg{ display:block; }
     textarea{ resize:vertical }
 
     #sort{
@@ -351,19 +355,13 @@
           </div>
           <div class="field">
             <label for="statusInput">Status</label>
-            <select id="statusInput">
-              <option>Strong match</option>
-              <option>Prospect</option>
-              <option>Unlikely match</option>
-              <option>Applied</option>
-              <option>Interviewing</option>
-              <option>Offer</option>
-              <option>Accepted</option>
-              <option>Rejected</option>
-              <option>Ghosted</option>
-              <option>Withdrawn</option>
-              <option>Declined</option>
-            </select>
+            <div class="status-control">
+              <select id="statusInput"></select>
+              <button type="button" class="btn btn-ghost btn-status-add" id="addStatusBtn" title="Add a new status" aria-label="Add a new status">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                <span>Add status</span>
+              </button>
+            </div>
           </div>
           <div class="field">
             <label for="linkInput">Link (job post / tracker)</label>
@@ -393,10 +391,16 @@
     const LS_KEY = "jobApplications.v1";
     const SORT_KEY = "jobApplications.sort.v1";
     const COL_STATE_KEY = "jobApplications.columnsCollapsed.v1";
+    const CUSTOM_STATUS_KEY = "jobApplications.customStatuses.v1";
 
-    const STATUS_ORDER = [
+    const DEFAULT_STATUSES = [
       "Strong match","Prospect","Unlikely match","Applied","Interviewing","Offer","Accepted","Rejected","Ghosted","Withdrawn","Declined"
     ];
+
+    /** @type {string[]} */
+    let customStatuses = [];
+    /** @type {Record<string,string>} */
+    let customStatusLookup = {};
 
     /** @type {Array<{ id:string, company:string, role:string, location?:string, recordedDate?:string, status?:string, link?:string, notes?:string, lastUpdated?:string }>} */
     let items = [];
@@ -425,6 +429,7 @@
       locationInput: document.getElementById("locationInput"),
       dateInput: document.getElementById("dateInput"),
       statusInput: document.getElementById("statusInput"),
+      addStatusBtn: document.getElementById("addStatusBtn"),
       linkInput: document.getElementById("linkInput"),
       notesInput: document.getElementById("notesInput"),
       editId: document.getElementById("editId"),
@@ -446,12 +451,19 @@
     }
 
     function load(){
+      loadCustomStatuses();
       try{
         const raw = localStorage.getItem(LS_KEY);
         items = raw ? JSON.parse(raw) : [];
         if(!Array.isArray(items)) items = [];
       }catch(e){ items = []; }
       items = migrateDateField(items);
+      items = items.map(it => {
+        if(it && typeof it === "object"){
+          it.status = normalizeStatus(it.status, { allowCreate: true, skipCollapseSave: true });
+        }
+        return it;
+      });
       if(items.length === 0){
         (async () => {
           try{
@@ -459,7 +471,13 @@
             const obj = await res.json();
             const arr = Array.isArray(obj) ? obj : (Array.isArray(obj.data) ? obj.data : []);
             if(Array.isArray(arr)){
-              items = migrateDateField(arr);
+              items = migrateDateField(arr).map(it => {
+                if(it && typeof it === "object"){
+                  it.status = normalizeStatus(it.status, { allowCreate: true });
+                }
+                return it;
+              });
+              refreshStatusOptions();
               save();
               render();
             }
@@ -471,9 +489,10 @@
         collapsed = cs ? JSON.parse(cs) : {};
       }catch(e){ collapsed = {}; }
       // Default to collapsed for all columns unless explicitly set
-      for(const s of STATUS_ORDER){
+      for(const s of getStatusList()){
         if(typeof collapsed[s] !== "boolean") collapsed[s] = true;
       }
+      refreshStatusOptions();
     }
     function save(){ localStorage.setItem(LS_KEY, JSON.stringify(items)); }
     function saveColState(){ localStorage.setItem(COL_STATE_KEY, JSON.stringify(collapsed)); }
@@ -484,10 +503,14 @@
       localStorage.removeItem(LS_KEY);
       localStorage.removeItem(COL_STATE_KEY);
       localStorage.removeItem(SORT_KEY);
+      localStorage.removeItem(CUSTOM_STATUS_KEY);
       items = [];
       collapsed = {};
-      for(const s of STATUS_ORDER){ collapsed[s] = true; }
+      customStatuses = [];
+      customStatusLookup = {};
+      for(const s of getStatusList()){ collapsed[s] = true; }
       els.sort.value = "date_desc";
+      refreshStatusOptions("Applied");
       render();
     }
 
@@ -505,6 +528,32 @@
       els.cancelEntryBtn.addEventListener("click", closeModal);
       els.closeModalBtn.addEventListener("click", closeModal);
       els.form.addEventListener("submit", onSave);
+      if(els.addStatusBtn){
+        els.addStatusBtn.addEventListener("click", () => {
+          const name = prompt("Name for the new status column?");
+          if(name === null) return;
+          const sanitized = sanitizeStatusName(name);
+          if(!sanitized){
+            alert("Please enter a valid status name.");
+            return;
+          }
+          const existing = findStatus(sanitized);
+          if(existing){
+            alert("That status already exists.");
+            refreshStatusOptions(existing);
+            els.statusInput.value = existing;
+            return;
+          }
+          const created = addCustomStatus(sanitized);
+          if(!created){
+            alert("Unable to add that status.");
+            return;
+          }
+          refreshStatusOptions(created);
+          els.statusInput.value = created;
+          render();
+        });
+      }
 
       // Export / Import
       els.exportJsonBtn.addEventListener("click", exportJSON);
@@ -580,18 +629,24 @@
 
       // Group by status
       const groups = Object.create(null);
-      for(const s of STATUS_ORDER) groups[s] = [];
+      const statusList = getStatusList();
+      for(const s of statusList) groups[s] = [];
       for(const it of list){
         const s = normalizeStatus(it.status);
         if(!groups[s]) groups[s] = [];
         groups[s].push(it);
       }
 
+      const orderedStatuses = statusList.slice();
+      for(const key of Object.keys(groups)){
+        if(!orderedStatuses.includes(key)) orderedStatuses.push(key);
+      }
+
       // Clear
       els.board.innerHTML = "";
 
       // Empty state — if nothing to render, show message.
-      const total = Object.values(groups).reduce((acc,arr)=>acc+arr.length,0);
+      const total = list.length;
       if(total === 0){
         if(items.length && q){
           els.empty.textContent = "No applications match your search.";
@@ -604,7 +659,7 @@
       }
 
       // Render columns — skip any status with zero cards
-      for(const status of STATUS_ORDER){
+      for(const status of orderedStatuses){
         const arr = groups[status] || [];
         if(arr.length === 0) continue; // hide empty columns
 
@@ -701,6 +756,7 @@
 
     function openModal(entry){
       els.form.reset();
+      refreshStatusOptions(entry?.status || "Applied");
       if(entry){
         els.modalTitle.innerHTML = `
           <div class="app-title">
@@ -747,7 +803,7 @@
         role,
         location: els.locationInput.value.trim(),
         recordedDate: els.dateInput.value || todayISO(),
-        status: normalizeStatus(els.statusInput.value) || "Applied",
+        status: normalizeStatus(els.statusInput.value, { allowCreate: true }) || "Applied",
         link: els.linkInput.value.trim(),
         notes: els.notesInput.value.trim(),
         lastUpdated: new Date().toISOString()
@@ -793,7 +849,7 @@
               role: String(e.role || "").trim(),
               location: String(e.location || ""),
               recordedDate: e.recordedDate || e.appliedDate || "",
-              status: normalizeStatus(e.status || "Applied"),
+              status: normalizeStatus(e.status || "Applied", { allowCreate: true }),
               link: String(e.link || ""),
               notes: String(e.notes || ""),
               lastUpdated: e.lastUpdated || new Date().toISOString()
@@ -803,6 +859,7 @@
             if(idx >= 0) items[idx] = entry; else items.push(entry);
             count++;
           }
+          refreshStatusOptions();
           save(); render();
           alert("Imported " + count + " entr" + (count===1?"y":"ies") + ".");
         }catch(err){ alert("Import failed: " + (err && err.message ? err.message : err)); }
@@ -820,18 +877,131 @@
     function genId(){ return "id_" + Math.random().toString(36).slice(2) + Date.now().toString(36); }
     function includes(val, q){ return (val || "").toLowerCase().includes(q); }
     function debounce(fn, ms){ let t; return (...args) => { clearTimeout(t); t = setTimeout(() => fn.apply(null,args), ms); }; }
-    function normalizeStatus(s){
-      const v = String(s || "").toLowerCase();
+
+    function sanitizeStatusName(name){
+      return String(name || "").replace(/\s+/g, " ").trim();
+    }
+
+    function buildCustomLookup(){
+      customStatusLookup = {};
+      for(const status of customStatuses){
+        customStatusLookup[status.toLowerCase()] = status;
+      }
+    }
+
+    function loadCustomStatuses(){
+      customStatuses = [];
+      try{
+        const raw = localStorage.getItem(CUSTOM_STATUS_KEY);
+        if(raw){
+          const arr = JSON.parse(raw);
+          if(Array.isArray(arr)){
+            const seen = new Set();
+            customStatuses = arr
+              .map(sanitizeStatusName)
+              .filter(Boolean)
+              .filter(status => {
+                const key = status.toLowerCase();
+                if(DEFAULT_STATUSES.some(def => def.toLowerCase() === key)) return false;
+                if(seen.has(key)) return false;
+                seen.add(key);
+                return true;
+              });
+          }
+        }
+      }catch(e){ customStatuses = []; }
+      buildCustomLookup();
+    }
+
+    function saveCustomStatuses(){
+      try{
+        localStorage.setItem(CUSTOM_STATUS_KEY, JSON.stringify(customStatuses));
+      }catch(e){ /* ignore */ }
+    }
+
+    function getStatusList(){
+      return DEFAULT_STATUSES.concat(customStatuses);
+    }
+
+    function findStatus(name){
+      const sanitized = sanitizeStatusName(name);
+      if(!sanitized) return null;
+      const lower = sanitized.toLowerCase();
+      const defaultMatch = DEFAULT_STATUSES.find(s => s.toLowerCase() === lower);
+      if(defaultMatch) return defaultMatch;
+      return customStatusLookup[lower] || null;
+    }
+
+    function addCustomStatus(name, opts = {}){
+      const sanitized = sanitizeStatusName(name);
+      if(!sanitized) return "";
+      const existing = findStatus(sanitized);
+      if(existing) return existing;
+      customStatuses.push(sanitized);
+      const seen = new Set();
+      customStatuses = customStatuses.filter(status => {
+        const key = status.toLowerCase();
+        if(DEFAULT_STATUSES.some(def => def.toLowerCase() === key)) return false;
+        if(seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+      buildCustomLookup();
+      saveCustomStatuses();
+      if(typeof collapsed[sanitized] !== "boolean"){
+        collapsed[sanitized] = true;
+        if(!opts.skipCollapseSave) saveColState();
+      }else if(!opts.skipCollapseSave){
+        saveColState();
+      }
+      return sanitized;
+    }
+
+    function refreshStatusOptions(preferred){
+      if(!els.statusInput) return;
+      const statuses = getStatusList();
+      const optionsHtml = statuses.map(status => `<option value="${escapeAttr(status)}">${escapeHTML(status)}</option>`).join("");
+      const previous = typeof preferred === "string" ? preferred : els.statusInput.value;
+      let desired = previous ? findStatus(previous) : "";
+      if(!desired && typeof previous === "string"){
+        const sanitized = sanitizeStatusName(previous);
+        desired = findStatus(sanitized);
+      }
+      if(!desired || !statuses.includes(desired)){
+        desired = statuses.includes("Applied") ? "Applied" : (statuses[0] || "");
+      }
+      els.statusInput.innerHTML = optionsHtml;
+      if(desired) els.statusInput.value = desired;
+    }
+
+    function normalizeStatus(s, options = {}){
+      const raw = sanitizeStatusName(s);
+      if(!raw) return "Applied";
+
+      const direct = findStatus(raw);
+      if(direct) return direct;
+
+      const v = raw.toLowerCase();
       if(v.startsWith("strong")) return "Strong match";
       if(v.includes("unlikely")) return "Unlikely match";
       if(v.startsWith("prospect")) return "Prospect";
       if(v.startsWith("interview")) return "Interviewing";
-      if(v==="offer") return "Offer";
-      if(v==="accepted") return "Accepted";
-      if(v==="rejected") return "Rejected";
-      if(v==="ghosted") return "Ghosted";
-      if(v==="withdrawn") return "Withdrawn";
-      if(v==="declined") return "Declined";
+      if(v === "offer") return "Offer";
+      if(v === "accepted") return "Accepted";
+      if(v === "rejected") return "Rejected";
+      if(v === "ghosted") return "Ghosted";
+      if(v === "withdrawn") return "Withdrawn";
+      if(v === "declined") return "Declined";
+      if(v === "applied") return "Applied";
+
+      const customMatch = customStatusLookup[v];
+      if(customMatch) return customMatch;
+
+      if(options.allowCreate){
+        const created = addCustomStatus(raw, { skipCollapseSave: options.skipCollapseSave });
+        if(created) return created;
+      }
+
       return "Applied";
     }
 
