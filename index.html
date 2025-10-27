@@ -110,8 +110,6 @@
     select:focus, input:focus, textarea:focus{ box-shadow: var(--shadow-focus) }
     .status-control{ display:flex; align-items:center; gap:8px; }
     .status-control select{ flex:1; }
-    .btn-status-add{ flex-shrink:0; white-space:nowrap; }
-    .btn-status-add svg{ display:block; }
     textarea{ resize:vertical }
 
     #sort{
@@ -357,10 +355,6 @@
             <label for="statusInput">Status</label>
             <div class="status-control">
               <select id="statusInput"></select>
-              <button type="button" class="btn btn-ghost btn-status-add" id="addStatusBtn" title="Add a new status" aria-label="Add a new status">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-                <span>Add status</span>
-              </button>
             </div>
           </div>
           <div class="field">
@@ -396,6 +390,8 @@
     const DEFAULT_STATUSES = [
       "Strong match","Prospect","Unlikely match","Applied","Interviewing","Offer","Accepted","Rejected","Ghosted","Withdrawn","Declined"
     ];
+    const ADD_STATUS_VALUE = "__add_status__";
+    let lastStatusSelection = "";
 
     /** @type {string[]} */
     let customStatuses = [];
@@ -429,7 +425,6 @@
       locationInput: document.getElementById("locationInput"),
       dateInput: document.getElementById("dateInput"),
       statusInput: document.getElementById("statusInput"),
-      addStatusBtn: document.getElementById("addStatusBtn"),
       linkInput: document.getElementById("linkInput"),
       notesInput: document.getElementById("notesInput"),
       editId: document.getElementById("editId"),
@@ -528,30 +523,23 @@
       els.cancelEntryBtn.addEventListener("click", closeModal);
       els.closeModalBtn.addEventListener("click", closeModal);
       els.form.addEventListener("submit", onSave);
-      if(els.addStatusBtn){
-        els.addStatusBtn.addEventListener("click", () => {
-          const name = prompt("Name for the new status column?");
-          if(name === null) return;
-          const sanitized = sanitizeStatusName(name);
-          if(!sanitized){
-            alert("Please enter a valid status name.");
-            return;
+      if(els.statusInput){
+        els.statusInput.addEventListener("focus", () => {
+          lastStatusSelection = els.statusInput.value;
+        });
+        els.statusInput.addEventListener("change", () => {
+          if(els.statusInput.value === ADD_STATUS_VALUE){
+            const result = promptForStatus();
+            if(typeof result === "string" && result){
+              refreshStatusOptions(result);
+              els.statusInput.value = result;
+              lastStatusSelection = result;
+            }else{
+              refreshStatusOptions(lastStatusSelection);
+            }
+          }else{
+            lastStatusSelection = els.statusInput.value;
           }
-          const existing = findStatus(sanitized);
-          if(existing){
-            alert("That status already exists.");
-            refreshStatusOptions(existing);
-            els.statusInput.value = existing;
-            return;
-          }
-          const created = addCustomStatus(sanitized);
-          if(!created){
-            alert("Unable to add that status.");
-            return;
-          }
-          refreshStatusOptions(created);
-          els.statusInput.value = created;
-          render();
         });
       }
 
@@ -778,6 +766,7 @@
       els.locationInput.value = entry?.location || "";
       els.dateInput.value = entry?.recordedDate || today;
       els.statusInput.value = normalizeStatus(entry?.status || "Applied");
+      lastStatusSelection = els.statusInput.value;
       els.linkInput.value = entry?.link || "";
       els.notesInput.value = entry?.notes || "";
       els.editId.value = entry?.id || "";
@@ -957,10 +946,35 @@
       return sanitized;
     }
 
+    function promptForStatus(){
+      const name = prompt("Name for the new status column?");
+      if(name === null) return null;
+      const sanitized = sanitizeStatusName(name);
+      if(!sanitized){
+        alert("Please enter a valid status name.");
+        return false;
+      }
+      const existing = findStatus(sanitized);
+      if(existing){
+        alert("That status already exists.");
+        return existing;
+      }
+      const created = addCustomStatus(sanitized);
+      if(!created){
+        alert("Unable to add that status.");
+        return false;
+      }
+      render();
+      return created;
+    }
+
     function refreshStatusOptions(preferred){
       if(!els.statusInput) return;
       const statuses = getStatusList();
-      const optionsHtml = statuses.map(status => `<option value="${escapeAttr(status)}">${escapeHTML(status)}</option>`).join("");
+      const optionsHtml = statuses
+        .map(status => `<option value="${escapeAttr(status)}">${escapeHTML(status)}</option>`)
+        .concat(`<option value="${escapeAttr(ADD_STATUS_VALUE)}">Add status…</option>`)
+        .join("");
       const previous = typeof preferred === "string" ? preferred : els.statusInput.value;
       let desired = previous ? findStatus(previous) : "";
       if(!desired && typeof previous === "string"){
@@ -972,6 +986,7 @@
       }
       els.statusInput.innerHTML = optionsHtml;
       if(desired) els.statusInput.value = desired;
+      lastStatusSelection = els.statusInput.value;
     }
 
     function normalizeStatus(s, options = {}){
